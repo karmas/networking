@@ -3,6 +3,7 @@
 #include <sys/socket.h>
 #include <netinet/ip.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -33,13 +34,18 @@ int main(int argc, const char *argv[])
   bzero(&saddr, sizeof(saddr));
   saddr.sin_family = AF_INET;
   saddr.sin_port = htons(serverPort);
-  saddr.sin_addr.s_addr = htons(serverAddr.s_addr);
+  saddr.sin_addr.s_addr = serverAddr.s_addr;
   if (connect(sd, (const sockaddr *)&saddr, sizeof(saddr)) < 0) {
     perror("connect fail");
     return 1;
   }
 
-  cout << "connecting" << endl;
+  const int bufLen = 100;
+  char buf[bufLen] = {};
+  if (read(sd, buf, bufLen) < 0) {
+    perror("read fail");
+  }
+  cout << buf << endl;
 
   return 0;
 }

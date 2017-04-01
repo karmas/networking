@@ -1,7 +1,9 @@
 CPPFLAGS = -Wall -g -std=c++11
 CC = g++
 
-apps = client byteorder
+apps = server client byteorder
+
+server: server.cc
 
 client: client.cc
 
