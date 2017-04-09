@@ -9,36 +9,58 @@ void request(int fd)
 {
   const int bufCap = 20;
   char buf[bufCap] = {};
-  while (fgets(buf, bufCap, stdin)) {
-    int wrote = strlen(buf);
-    if (write(fd, buf, wrote) < 0) {
-      perror("unable to write");
+  fd_set fds;
+  const int maxfds = fd + 1;
+  int ret = 0;
+  bool stdineof = false;
+
+  while (true) {
+    FD_ZERO(&fds);
+    FD_SET(fd, &fds);
+    if (!stdineof)
+      FD_SET(fileno(stdin), &fds);
+    ret = select(maxfds, &fds, 0, 0, 0);
+    if (ret == -1) {
+      if (errno == EINTR) {
+        puts("select recover from interrupt");
+        continue;
+      }
+      else {
+        perror("error in select");
+        break;
+      }
     }
 
-    bzero(buf, bufCap);
-    int got = 0;
-    int gotTotal = 0;
-    while ((got = read(fd, buf, wrote))) {
-      if (got > 0) {
-        gotTotal += got;
+    // stdin
+    if (!stdineof && FD_ISSET(fileno(stdin), &fds)) {
+      char *s = fgets(buf, bufCap, stdin);
+      if (!s) {
+        FD_CLR(fileno(stdin), &fds);
+        stdineof = true;
+        shutdown(fd, SHUT_WR);
       }
-      else if (got == -1) {
-        if (errno == EINTR) {
-          cout << "recover from interruption" << endl;
+      else {
+        write(fd, buf, strlen(buf));
+      }
+    }
+    if (FD_ISSET(fd, &fds)) {
+      int got = read(fd, buf, bufCap);
+      if (got == 0) {
+        if (stdineof) {
+          puts("server got shutdown");
         }
         else {
-          cout << "read error" << endl;
-          break;
+          puts("server died");
         }
+        return;
       }
-      if (gotTotal == wrote) break;
+      else if (got == -1) {
+        perror("error reading from socket");
+        return;
+      }
+      buf[got] = 0;
+      printf("from server [%s]\n", buf);
     }
-    if (gotTotal == 0) {
-      cout << "error: server died" << endl;
-      return;
-    }
-    cout << "from server: [";
-    cout << buf << "]" << endl;
   }
 }
 
