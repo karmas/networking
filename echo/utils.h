@@ -15,7 +15,7 @@
 
 void passert(const char *msg, bool cond)
 {
-  if (!cond) return;
+  if (cond) return;
   perror(msg);
   exit(1);
 }

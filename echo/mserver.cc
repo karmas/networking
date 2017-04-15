@@ -25,11 +25,11 @@ void useSelect(int listenfd)
 
     if (FD_ISSET(listenfd, &fset)) {
       int connfd = accept(listenfd, (sockaddr *) &clientAddr, &calen);
-      passert("error accept", connfd == -1);
+      passert("error accept", connfd != -1);
       cout << "client connected: ";
       printAddress(clientAddr, cout);
       cout << endl;
-      passert("too many clients", num_clientfds == maxClients);
+      passert("too many clients", num_clientfds != maxClients);
 
       int ci = 0;
       while (clientfds[ci]) ++ci;
@@ -47,7 +47,7 @@ void useSelect(int listenfd)
       int connfd = clientfds[i];
       if (connfd && FD_ISSET(connfd, &fset)) {
         ret = read(connfd, buf, bufCap);
-        passert("read error", ret == -1);
+        passert("read error", ret != -1);
         if (ret > 0) {
           write(connfd, buf, ret);
         }
@@ -87,11 +87,11 @@ int main(int argc, const char *argv[])
   int ret = getAddress(argv[1], serverAddr);
   assert("can't get server address" && ret);
   int listenfd = socket(AF_INET, SOCK_STREAM, 0);
-  passert("error socket", listenfd == -1);
+  passert("error socket", listenfd != -1);
   ret = bind(listenfd, (const sockaddr *)&serverAddr, sizeof(serverAddr));
-  passert("error bind", ret == -1);
+  passert("error bind", ret != -1);
   ret = listen(listenfd, 5);
-  passert("error listen", ret == -1);
+  passert("error listen", ret != -1);
 
   if (multiplexer == 's') {
     useSelect(listenfd);

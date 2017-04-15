@@ -45,11 +45,11 @@ int main(int argc, const char *argv[])
   assert("can't get server address" && getAddress(argv[1], serverAddress));
 
   int listenfd = socket(AF_INET, SOCK_STREAM, 0);
-  passert("error creating listening socket", listenfd == -1);
+  passert("error creating listening socket", listenfd != -1);
   int ret = bind(listenfd, (const sockaddr *) &serverAddress, sizeof(serverAddress));
-  passert("error binding", ret == -1);
+  passert("error binding", ret != -1);
   ret = listen(listenfd, 5);
-  passert("error in listen()", ret == -1);
+  passert("error in listen()", ret != -1);
 
   sockaddr_in clientAddress = {};
   socklen_t clientAddressLen = sizeof(clientAddress);

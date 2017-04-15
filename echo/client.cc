@@ -94,10 +94,10 @@ int main(int argc, const char *argv[])
   bzero(serverfds, sizeof(serverfds));
   for (int i = 0; i < numConns; ++i) {
     serverfds[i] = socket(AF_INET, SOCK_STREAM, 0);
-    passert("error creating socket", serverfds[i] == -1);
+    passert("error creating socket", serverfds[i] != -1);
     int ret = connect(serverfds[i], (const sockaddr *)&serverAddress,
         sizeof(serverAddress));
-    passert("error connecting to server", ret == -1);
+    passert("error connecting to server", ret != -1);
   }
 
   // only first connection interacts
